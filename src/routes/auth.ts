@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { fail, success } from "../utils/response.js";
 import { JWT_SECRET } from "../env.js";
-import { auth } from "../middlewares/auth.js";
 
 export const authRouter = Router()
 
@@ -84,7 +83,7 @@ authRouter.post("/login", async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-authRouter.post("/logout", auth, async (req, res) => {
+authRouter.post("/logout", async (req, res) => {
   const user = (req as any).user as { id: string };
 
   await prisma.auditLog.create({

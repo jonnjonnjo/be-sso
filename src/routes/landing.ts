@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
-import { auth } from "../middlewares/auth.js";
 import { success, fail } from "../utils/response.js";
 
 export const landingRouter = Router();
@@ -21,7 +20,7 @@ export const landingRouter = Router();
  *       403:
  *         description: Account is inactive
  */
-landingRouter.get("/", auth, async (req, res) => {
+landingRouter.get("/", async (req, res) => {
   const { id } = (req as any).user as { id: string };
 
   const user = await prisma.user.findUnique({
