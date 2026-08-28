@@ -121,10 +121,29 @@ async function main() {
     }
   }
 
+  // dummy contacts — Yellow Pages
+  const contacts = [
+    { name: "Budi Santoso", employeeId: "EMP001", department: "Engineering", parentDepartment: "Technology", position: "Senior Engineer", email: "budi.santoso@company.com", phone: "101", location: "Jakarta" },
+    { name: "Siti Aminah", employeeId: "EMP002", department: "Engineering", parentDepartment: "Technology", position: "Frontend Engineer", email: "siti.aminah@company.com", phone: "102", location: "Bandung" },
+    { name: "Andi Wijaya", employeeId: "EMP003", department: "HR", parentDepartment: "People", position: "HR Manager", email: "andi.wijaya@company.com", phone: "201", location: "Jakarta" },
+    { name: "Rina Marlina", employeeId: "EMP004", department: "HR", parentDepartment: "People", position: "Recruiter", email: "rina.marlina@company.com", phone: "202", location: "Surabaya" },
+    { name: "Joko Prabowo", employeeId: "EMP005", department: "Finance", parentDepartment: "Operations", position: "Finance Manager", email: "joko.prabowo@company.com", phone: "301", location: "Jakarta" },
+    { name: "Dewi Lestari", employeeId: "EMP006", department: "Finance", parentDepartment: "Operations", position: "Accountant", email: "dewi.lestari@company.com", phone: "302", location: "Bandung" },
+    { name: "Agus Hermawan", employeeId: "EMP007", department: "Marketing", parentDepartment: "Sales", position: "Marketing Lead", email: "agus.hermawan@company.com", phone: "401", location: "Surabaya" },
+    { name: "Maya Sari", employeeId: "EMP008", department: "Marketing", parentDepartment: "Sales", position: "Content Strategist", email: "maya.sari@company.com", phone: "402", location: "Jakarta" },
+    { name: "Farhan Yusuf", employeeId: "EMP009", department: "Engineering", parentDepartment: "Technology", position: "DevOps Engineer", email: "farhan.yusuf@company.com", phone: "103", location: "Surabaya" },
+    { name: "Lina Hartati", employeeId: "EMP010", department: "Engineering", parentDepartment: "Technology", position: "QA Engineer", email: "lina.hartati@company.com", phone: "104", location: "Bandung" },
+  ];
+
+  for (const c of contacts) {
+    await prisma.contact.create({ data: { ...c, status: "ACTIVE" } });
+  }
+
   console.log("Seed selesai ✅", {
     roles: [adminRole.name, userRole.name],
     users: [budi.username, siti.username, andi.username, rina.username, joko.username],
     apps: [yellowPages.name, hrPortal.name, docPortal.name],
+    contacts: contacts.length,
   });
 }
 
