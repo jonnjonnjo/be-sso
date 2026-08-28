@@ -7,6 +7,13 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  await prisma.auditLog.deleteMany();
+  await prisma.userApplication.deleteMany();
+  await prisma.contact.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.application.deleteMany();
+  await prisma.role.deleteMany();
+
   const adminRole = await prisma.role.upsert({
     where: { name: "Admin" },
     update: {},
