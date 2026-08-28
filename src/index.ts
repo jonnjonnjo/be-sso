@@ -1,5 +1,6 @@
 import express from "express";
 import "dotenv/config";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { spec } from "./swagger.js";
 import { authRouter } from "./routes/auth.js";
@@ -15,6 +16,7 @@ import { requireApp } from "./middlewares/requireApp.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(spec));
 
