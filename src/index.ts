@@ -9,6 +9,7 @@ import { userRouter } from "./routes/users.js";
 import { applicationRouter } from "./routes/applications.js";
 import { userApplicationRouter } from "./routes/userApplications.js";
 import { contactRouter } from "./routes/contacts.js";
+import { auditLogRouter } from "./routes/auditLogs.js";
 import { auth } from "./middlewares/auth.js";
 import { requireApp } from "./middlewares/requireApp.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -24,6 +25,7 @@ app.use("/landing", auth, landingRouter)
 app.use("/users/:id/applications", auth, requireRole("Admin"), userApplicationRouter)
 app.use("/users", auth, requireRole("Admin"), userRouter)
 app.use("/applications", auth, requireRole("Admin"), applicationRouter)
+app.use("/audit-logs", auth, requireRole("Admin"), auditLogRouter)
 app.use("/contacts", auth, requireApp("Yellow Pages"), contactRouter)
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
