@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../db.js";
 import { fail, success } from "../utils/response.js";
 import { hashPassword } from "../utils/password.js";
+import { sanitizeUser, sanitizeUsers } from "../utils/sanitize.js";
 
 export const userRouter = Router()
 
@@ -23,10 +24,10 @@ export const userRouter = Router()
  */
 userRouter.get("/", async (req, res) => {
   const users = await prisma.user.findMany({
-    select: { id: true, username: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
+    select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
     orderBy: { createdAt: "desc" }
   });
-  return success(res, "Get users successful", users)
+  return success(res, "Get users successful", sanitizeUsers(users as any))
 })
 
 /**
@@ -78,7 +79,7 @@ userRouter.post("/", async (req, res) => {
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: { username, passwordHash, roleId: role.id },
-    select: { id: true, username: true, activeStatus: true, role: { select: { name: true } }, createdAt: true },
+    select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { name: true } }, createdAt: true },
   });
 
   // log
@@ -86,7 +87,7 @@ userRouter.post("/", async (req, res) => {
   await prisma.auditLog.create({
     data: { userId: actor.id, action: "CREATE", entity: "User", entityId: user.id, detail: `created user ${username}` },
   });
-  return success(res, "User created", user, 201);
+  return success(res, "User created", sanitizeUser(user as any), 201);
 })
 
 /**
@@ -159,7 +160,7 @@ userRouter.patch("/:id", async (req, res) => {
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, username: true, activeStatus: true, role: { select: { name: true } }, updatedAt: true },
+    select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { name: true } }, updatedAt: true },
   });
 
   // log
@@ -167,5 +168,5 @@ userRouter.patch("/:id", async (req, res) => {
   await prisma.auditLog.create({
     data: { userId: actor.id, action: "UPDATE", entity: "User", entityId: id, detail: `updated user ${id}` },
   });
-  return success(res, "User updated", user);
+  return success(res, "User updated", sanitizeUser(user as any));
 })

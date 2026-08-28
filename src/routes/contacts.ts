@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
-import { fail, success } from "../utils/response.js";
+import { fail, success, successWithMeta } from "../utils/response.js";
 import { requireRole } from "../middlewares/requireRole.js";
 
 export const contactRouter = Router()
@@ -54,7 +54,7 @@ contactRouter.get("/", async (req, res) => {
     prisma.contact.count({ where })
   ]);
 
-  return success(res, "Get contacts", { data, total, page: parseInt(page), limit: take });
+  return successWithMeta(res, "Get contacts", data, { total, page: parseInt(page), limit: take });
 })
 
 /**
