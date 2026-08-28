@@ -9,6 +9,7 @@ import { userRouter } from "./routes/users.js";
 import { applicationRouter } from "./routes/applications.js";
 import { userApplicationRouter } from "./routes/userApplications.js";
 import { auth } from "./middlewares/auth.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 app.use(express.json());
@@ -23,5 +24,10 @@ app.use("/users", auth, requireRole("Admin"), userRouter)
 app.use("/applications", auth, requireRole("Admin"), applicationRouter)
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
+
+// 404 — must be before errorHandler
+app.use((_req, res) => res.status(404).json({ success: false, message: "Not found" }));
+
+app.use(errorHandler);
 
 app.listen(3000, () => console.log("API on http://localhost:3000 (docs at /docs)"));
