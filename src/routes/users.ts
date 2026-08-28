@@ -47,6 +47,35 @@ userRouter.get("/", async (req, res) => {
 
 /**
  * @openapi
+ * /users/{id}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get user by id (Admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: User detail
+ *       404:
+ *         description: Not found
+ */
+userRouter.get("/:id", async (req, res) => {
+  const id = req.params.id as string;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true }
+  });
+  if (!user) return fail(res, "User not found", undefined, 404);
+  return success(res, "Get user", sanitizeUser(user as any));
+})
+
+/**
+ * @openapi
  * /users:
  *   post:
  *     tags: [Users]

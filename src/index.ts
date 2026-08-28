@@ -8,6 +8,7 @@ import { landingRouter } from "./routes/landing.js";
 import { requireRole } from "./middlewares/requireRole.js";
 import { userRouter } from "./routes/users.js";
 import { applicationRouter } from "./routes/applications.js";
+import { roleRouter } from "./routes/roles.js";
 import { userApplicationRouter } from "./routes/userApplications.js";
 import { contactRouter } from "./routes/contacts.js";
 import { auditLogRouter } from "./routes/auditLogs.js";
@@ -27,6 +28,7 @@ app.use("/landing", auth, landingRouter)
 app.use("/users/:id/applications", auth, requireRole("Admin"), userApplicationRouter)
 app.use("/users", auth, requireRole("Admin"), userRouter)
 app.use("/applications", auth, requireRole("Admin"), applicationRouter)
+app.use("/roles", auth, requireRole("Admin"), roleRouter)
 app.use("/audit-logs", auth, requireRole("Admin"), auditLogRouter)
 app.use("/contacts", auth, requireApp("Yellow Pages"), contactRouter)
 

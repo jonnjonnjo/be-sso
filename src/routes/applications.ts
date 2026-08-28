@@ -36,6 +36,32 @@ applicationRouter.get("/", async (req, res) => {
 
 /**
  * @openapi
+ * /applications/{id}:
+ *   get:
+ *     tags: [Applications]
+ *     summary: Get application by id (Admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Application detail
+ *       404:
+ *         description: Not found
+ */
+applicationRouter.get("/:id", async (req, res) => {
+  const id = req.params.id as string;
+  const app = await prisma.application.findUnique({ where: { id } });
+  if (!app) return fail(res, "Application not found", undefined, 404);
+  return success(res, "Get application", app);
+})
+
+/**
+ * @openapi
  * /applications:
  *   post:
  *     tags: [Applications]
