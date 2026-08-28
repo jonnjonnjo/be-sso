@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
-import { fail, success } from "../utils/response.js";
+import { fail, success, successWithMeta } from "../utils/response.js";
 import { hashPassword } from "../utils/password.js";
 import { sanitizeUser, sanitizeUsers } from "../utils/sanitize.js";
 import { validate } from "../middlewares/validate.js";
@@ -16,6 +16,13 @@ export const userRouter = Router()
  *     summary: List all users (Admin)
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
  *     responses:
  *       200:
  *         description: List of users
@@ -25,11 +32,17 @@ export const userRouter = Router()
  *         description: Forbidden
  */
 userRouter.get("/", async (req, res) => {
-  const users = await prisma.user.findMany({
-    select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
-    orderBy: { createdAt: "desc" }
-  });
-  return success(res, "Get users successful", sanitizeUsers(users as any))
+  const page = Math.max(1, parseInt((req.query.page as string) || "1"));
+  const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || "20")));
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    prisma.user.findMany({
+      select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
+      skip, take: limit, orderBy: { createdAt: "desc" }
+    }),
+    prisma.user.count()
+  ]);
+  return successWithMeta(res, "Get users successful", sanitizeUsers(data as any), { total, page, limit });
 })
 
 /**

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
-import { fail, success } from "../utils/response.js";
+import { fail, success, successWithMeta } from "../utils/response.js";
 
 export const applicationRouter = Router()
 
@@ -12,13 +12,26 @@ export const applicationRouter = Router()
  *     summary: List applications (Admin)
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
  *     responses:
  *       200:
  *         description: List of applications
  */
 applicationRouter.get("/", async (req, res) => {
-  const apps = await prisma.application.findMany({ orderBy: { createdAt: "desc" } });
-  return success(res, "Get applications successful", apps)
+  const page = Math.max(1, parseInt((req.query.page as string) || "1"));
+  const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || "20")));
+  const skip = (page - 1) * limit;
+  const [data, total] = await Promise.all([
+    prisma.application.findMany({ skip, take: limit, orderBy: { createdAt: "desc" } }),
+    prisma.application.count()
+  ]);
+  return successWithMeta(res, "Get applications successful", data, { total, page, limit });
 })
 
 /**
