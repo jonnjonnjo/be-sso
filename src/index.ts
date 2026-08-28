@@ -7,6 +7,7 @@ import { landingRouter } from "./routes/landing.js";
 import { requireRole } from "./middlewares/requireRole.js";
 import { userRouter } from "./routes/users.js";
 import { applicationRouter } from "./routes/applications.js";
+import { userApplicationRouter } from "./routes/userApplications.js";
 import { auth } from "./middlewares/auth.js";
 
 const app = express();
@@ -17,6 +18,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(spec));
 app.use("/auth/logout", auth);
 app.use("/auth", authRouter)
 app.use("/landing", auth, landingRouter)
+app.use("/users/:id/applications", auth, requireRole("Admin"), userApplicationRouter)
 app.use("/users", auth, requireRole("Admin"), userRouter)
 app.use("/applications", auth, requireRole("Admin"), applicationRouter)
 
