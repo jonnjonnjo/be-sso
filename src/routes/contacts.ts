@@ -35,7 +35,7 @@ export const contactRouter = Router()
  *         description: Paginated contacts
  */
 contactRouter.get("/", async (req, res) => {
-  const { q, department, location, page = "1", limit = "20" } = req.query as any;
+  const { q, department, location, status, page = "1", limit = "20" } = req.query as any;
   const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
   const take = Math.min(100, Math.max(1, parseInt(limit)));
 
@@ -48,6 +48,7 @@ contactRouter.get("/", async (req, res) => {
   }
   if (department) where.department = department;
   if (location) where.location = location;
+  if (status) where.status = status;
 
   const [data, total] = await Promise.all([
     prisma.contact.findMany({ where, skip, take, orderBy: { createdAt: "desc" } }),
