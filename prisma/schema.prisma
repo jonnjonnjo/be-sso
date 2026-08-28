@@ -7,4 +7,91 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id               String            @id @default(uuid())
+  username         String            @unique
+  passwordHash     String
+  roleId           String
+  role             Role              @relation(fields: [roleId], references: [id])
+  userApplications UserApplication[]
+  activeStatus     Status            @default(ACTIVE)
+  auditLogs        AuditLog[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+model Application {
+  id               String            @id @default(uuid())
+  name             String
+  userApplications UserApplication[]
+  url              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserApplication {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, applicationId])
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  action    AuditAction
+  entity    String
+  entityId  String?
+  detail    String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model Contact {
+  id               String  @id @default(uuid())
+  name             String
+  employeeId       String  @unique
+  department       String
+  parentDepartment String?
+  position         String
+  email            String?
+  phone            String?
+  location         String?
+  status           Status
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([department])
+  @@index([location])
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  CREATE
+  UPDATE
+  DELETE
+}
+
 // Add your models here, then run: npx prisma migrate dev --name init
