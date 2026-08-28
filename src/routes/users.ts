@@ -35,12 +35,15 @@ userRouter.get("/", async (req, res) => {
   const page = Math.max(1, parseInt((req.query.page as string) || "1"));
   const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) || "20")));
   const skip = (page - 1) * limit;
+  const q = (req.query.q as string) || "";
+  const where: any = q ? { username: { contains: q, mode: "insensitive" } } : {};
   const [data, total] = await Promise.all([
     prisma.user.findMany({
+      where,
       select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
       skip, take: limit, orderBy: { createdAt: "desc" }
     }),
-    prisma.user.count()
+    prisma.user.count({ where })
   ]);
   return successWithMeta(res, "Get users successful", sanitizeUsers(data as any), { total, page, limit });
 })
