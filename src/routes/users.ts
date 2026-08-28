@@ -3,6 +3,8 @@ import { prisma } from "../db.js";
 import { fail, success } from "../utils/response.js";
 import { hashPassword } from "../utils/password.js";
 import { sanitizeUser, sanitizeUsers } from "../utils/sanitize.js";
+import { validate } from "../middlewares/validate.js";
+import { createUserSchema, updateUserSchema } from "../validators/schemas.js";
 
 export const userRouter = Router()
 
@@ -61,11 +63,10 @@ userRouter.get("/", async (req, res) => {
  *       409:
  *         description: Username exists
  */
-userRouter.post("/", async (req, res) => {
+userRouter.post("/", validate(createUserSchema), async (req, res) => {
   const { username, password, roleId } = req.body as {
     username?: string; password?: string; roleId?: string;
   };
-  if (!username?.trim() || !password?.trim()) return fail(res, "username and password are required", undefined, 400);
 
   // Default to User
   let role;
@@ -73,12 +74,12 @@ userRouter.post("/", async (req, res) => {
   else role = await prisma.role.findUnique({ where: { name: "User" } });
   if (!role) return fail(res, "Role not found", undefined, 404);
 
-  const exists = await prisma.user.findUnique({ where: { username } });
+  const exists = await prisma.user.findUnique({ where: { username: username! } });
   if (exists) return fail(res, "Username already exists", undefined, 409);
 
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await hashPassword(password!);
   const user = await prisma.user.create({
-    data: { username, passwordHash, roleId: role.id },
+    data: { username: username!, passwordHash, roleId: role.id },
     select: { id: true, username: true, passwordHash: true, activeStatus: true, role: { select: { name: true } }, createdAt: true },
   });
 
@@ -122,19 +123,12 @@ userRouter.post("/", async (req, res) => {
  *       404:
  *         description: User not found
  */
-userRouter.patch("/:id", async (req, res) => {
-  const { id } = req.params;
+userRouter.patch("/:id", validate(updateUserSchema), async (req, res) => {
+  const id = req.params.id as string;
 
   const { username, roleId, activeStatus, password } = req.body as {
     username?: string; roleId?: string; activeStatus?: "ACTIVE" | "INACTIVE"; password?: string;
   };
-
-  if (!username && !roleId && !activeStatus && password === undefined) {
-    return fail(res, "At least one field is required: username, roleId, activeStatus, password", undefined, 400);
-  }
-  if (password !== undefined && !password.trim()) {
-    return fail(res, "password cannot be empty", undefined, 400);
-  }
   const existing = await prisma.user.findUnique({ where: { id } });
   if (!existing) return fail(res, "User not found", undefined, 404);
   const data: any = {};
@@ -151,7 +145,6 @@ userRouter.patch("/:id", async (req, res) => {
     data.roleId = role.id;
   }
   if (activeStatus) {
-    if (!["ACTIVE", "INACTIVE"].includes(activeStatus)) return fail(res, "activeStatus must be ACTIVE or INACTIVE", undefined, 400);
     data.activeStatus = activeStatus;
   }
   if (password) {
