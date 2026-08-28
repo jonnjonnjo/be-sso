@@ -205,3 +205,33 @@ userRouter.patch("/:id", validate(updateUserSchema), async (req, res) => {
   });
   return success(res, "User updated", sanitizeUser(user as any));
 })
+
+/**
+ * @openapi
+ * /users/{id}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: Delete user (Admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Deleted
+ *       404:
+ *         description: Not found
+ */
+userRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id as string;
+  const existing = await prisma.user.findUnique({ where: { id } });
+  if (!existing) return fail(res, "User not found", undefined, 404);
+  const actor = (req as any).user as { id: string };
+  if (actor.id === id) return fail(res, "Cannot delete yourself", undefined, 400);
+  await prisma.user.delete({ where: { id } });
+  await prisma.auditLog.create({ data: { userId: actor.id, action: "DELETE", entity: "User", entityId: id, detail: `deleted user ${existing.username}` } });
+  return success(res, "User deleted", { id });
+})
