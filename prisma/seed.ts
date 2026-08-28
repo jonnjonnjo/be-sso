@@ -39,6 +39,36 @@ async function main() {
     },
   });
 
+  const andi = await prisma.user.upsert({
+    where: { username: "andi" },
+    update: {},
+    create: {
+      username: "andi",
+      passwordHash: await hashPassword("andi123"),
+      roleId: userRole.id,
+    },
+  });
+
+  const rina = await prisma.user.upsert({
+    where: { username: "rina" },
+    update: {},
+    create: {
+      username: "rina",
+      passwordHash: await hashPassword("rina123"),
+      roleId: userRole.id,
+    },
+  });
+
+  const joko = await prisma.user.upsert({
+    where: { username: "joko" },
+    update: {},
+    create: {
+      username: "joko",
+      passwordHash: await hashPassword("joko123"),
+      roleId: adminRole.id,
+    },
+  });
+
   let yellowPages = await prisma.application.findFirst({
     where: { name: "Yellow Pages" },
   });
@@ -48,19 +78,46 @@ async function main() {
     });
   }
 
-  const grant = await prisma.userApplication.findFirst({
-    where: { userId: budi.id, applicationId: yellowPages.id },
+  let hrPortal = await prisma.application.findFirst({
+    where: { name: "HR Portal" },
   });
-  if (!grant) {
-    await prisma.userApplication.create({
-      data: { userId: budi.id, applicationId: yellowPages.id },
+  if (!hrPortal) {
+    hrPortal = await prisma.application.create({
+      data: { name: "HR Portal", url: "/hr-portal" },
     });
+  }
+
+  let docPortal = await prisma.application.findFirst({
+    where: { name: "Document Portal" },
+  });
+  if (!docPortal) {
+    docPortal = await prisma.application.create({
+      data: { name: "Document Portal", url: "/docs-portal" },
+    });
+  }
+
+  for (const [user, app] of [
+    [budi, yellowPages],
+    [budi, hrPortal],
+    [siti, yellowPages],
+    [andi, yellowPages],
+    [joko, hrPortal],
+    [joko, docPortal],
+  ] as const) {
+    const exists = await prisma.userApplication.findFirst({
+      where: { userId: user.id, applicationId: app.id },
+    });
+    if (!exists) {
+      await prisma.userApplication.create({
+        data: { userId: user.id, applicationId: app.id },
+      });
+    }
   }
 
   console.log("Seed selesai ✅", {
     roles: [adminRole.name, userRole.name],
-    users: [budi.username, siti.username],
-    app: yellowPages.name,
+    users: [budi.username, siti.username, andi.username, rina.username, joko.username],
+    apps: [yellowPages.name, hrPortal.name, docPortal.name],
   });
 }
 
