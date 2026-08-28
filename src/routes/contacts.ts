@@ -99,13 +99,13 @@ contactRouter.get("/:id", async (req, res) => {
  *             type: object
  *             required: [name, employeeId, department, position]
  *             properties:
- *               name: { type: string, example: Budi Santoso }
- *               employeeId: { type: string, example: EMP001 }
+ *               name: { type: string, example: Rudi Hartono }
+ *               employeeId: { type: string, example: EMP100 }
  *               department: { type: string, example: Engineering }
- *               parentDepartment: { type: string }
- *               position: { type: string, example: Senior Engineer }
- *               email: { type: string }
- *               phone: { type: string }
+ *               parentDepartment: { type: string, example: Technology }
+ *               position: { type: string, example: Backend Engineer }
+ *               email: { type: string, example: rudi.hartono@company.com }
+ *               phone: { type: string, example: "105" }
  *               location: { type: string, example: Jakarta }
  *     responses:
  *       201:
