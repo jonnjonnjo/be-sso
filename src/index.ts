@@ -6,6 +6,7 @@ import { authRouter } from "./routes/auth.js";
 import { landingRouter } from "./routes/landing.js";
 import { requireRole } from "./middlewares/requireRole.js";
 import { userRouter } from "./routes/users.js";
+import { applicationRouter } from "./routes/applications.js";
 import { auth } from "./middlewares/auth.js";
 
 const app = express();
@@ -17,6 +18,7 @@ app.use("/auth/logout", auth);
 app.use("/auth", authRouter)
 app.use("/landing", auth, landingRouter)
 app.use("/users", auth, requireRole("Admin"), userRouter)
+app.use("/applications", auth, requireRole("Admin"), applicationRouter)
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
